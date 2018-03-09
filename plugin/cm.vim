@@ -1,3 +1,8 @@
+if get(g:, 'asyncomplete_shim_loaded')
+  finish
+endif
+let g:asyncomplete_shim_loaded = 1
+
 if exists('*matchstrpos')
     function! s:matchstrpos(expr, pattern) abort
         return matchstrpos(a:expr, a:pattern)

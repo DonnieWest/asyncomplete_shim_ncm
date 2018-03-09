@@ -8,6 +8,19 @@ else
     endfunction
 endif
 
+" omni completion wrapper
+func! s:asyncomplete_refresh_omni(opt,ctx)
+    " omni function's startcol is zero based, convert it to one based
+    let l:startcol = call(a:opt['cm_refresh']['omnifunc'],[1,'']) + 1
+    let l:typed = a:ctx['typed']
+    let l:base = l:typed[l:startcol-1:]
+    let l:matches = call(a:opt['cm_refresh']['omnifunc'],[0, l:base])
+    if type(l:matches)!=type([])
+        return
+    endif
+    call asyncomplete#complete(a:opt['name'], a:ctx, l:startcol, l:matches)
+endfunc
+
 let g:cm_matcher = get(g:,'cm_matcher',{'module': 'cm_matchers.prefix_matcher', 'case': 'smartcase'})
 
 function! cm#register_source(info) abort
@@ -55,6 +68,9 @@ function! cm#register_source(info) abort
       let l:ctx['startcol'] = l:ctx['col'] - len(l:match[0])
 
       return l:refresh(a:opt, l:ctx)
+    elseif l:type==4 && has_key(l:refresh,'omnifunc')
+        call s:asyncomplete_refresh_omni(a:info, a:ctx)
+    endif
   endfunction
 
   call asyncomplete#register_source({

@@ -29,11 +29,17 @@ endfunc
 let g:cm_matcher = get(g:,'cm_matcher',{'module': 'cm_matchers.prefix_matcher', 'case': 'smartcase'})
 
 function! cm#register_source(info) abort
+  let l:name = a:info['name']
+  if has_key(g:cm_sources_override, l:name)
+      " override source default options
+      call extend(a:info, g:cm_sources_override[l:name])
+  endif
+
   if !has_key(a:info, 'scopes')
       let a:info['scopes'] = ['*']
   endif
   if !has_key(a:info, 'cm_refresh')
-      let a:info['cm_refresh'] = function('asyncomplete#sources#'.a:info['name'].'#completor')
+      let a:info['cm_refresh'] = function('asyncomplete#sources#'.l:name.'#completor')
   endif
 
   if !has_key(a:info, 'priority')
@@ -79,7 +85,7 @@ function! cm#register_source(info) abort
   endfunction
 
   call asyncomplete#register_source({
-    \ 'name': a:info['name'],
+    \ 'name': l:name,
     \ 'priority': a:info['priority'],
     \ 'whitelist': a:info['scopes'],
     \ 'completor': funcref('Closure'),

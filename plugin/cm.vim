@@ -67,7 +67,8 @@ function! cm#register_source(info) abort
 endfunction
 
 func! cm#complete(info, context, startcol, matches, ...)
-  call asyncomplete#complete(a:info['name'], a:context, a:startcol, a:matches)
+  let l:args = [a:info['name'], a:context, a:startcol, a:matches] + deepcopy(a:000)
+  call call('asyncomplete#complete', l:args)
 endfunc
 
 func! cm#context_changed(ctx)

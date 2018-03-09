@@ -8,6 +8,8 @@ else
     endfunction
 endif
 
+let g:cm_matcher = get(g:,'cm_matcher',{'module': 'cm_matchers.prefix_matcher', 'case': 'smartcase'})
+
 function! cm#register_source(info) abort
   if !has_key(a:info, 'scopes')
       let a:info['scopes'] = ['*']

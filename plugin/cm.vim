@@ -32,30 +32,38 @@ function! cm#register_source(info) abort
     endif
   endif
 
+  if has_key(a:info, 'word_pattern')
+    let l:word_pattern = '\v('. a:info['word_pattern'] . '$)'
+  else
+    let l:word_pattern = '\v((-?\d*\.\d\w*)|([^\`\~\!\@\#\$\%\^\&\*\(\)\-\=\+\[\{\]\}\\\|\;\:\''\"\,\.\<\>\/\?\s]+)$)'
+  endif
 
-  if type(a:info['cm_refresh']) == 1
-    function! Closure(opt, ctx) closure
+  function! Closure(opt, ctx) closure
+    let l:refresh = a:info['cm_refresh']
+    let l:type = type(l:refresh)
+    if  l:type == 1
       let l:ctx = copy(a:ctx)
-      if has_key(a:info, 'word_pattern')
-        let l:word_pattern = '\v('. a:info['word_pattern'] . '$)'
-      else
-        let l:word_pattern = '\v((-?\d*\.\d\w*)|([^\`\~\!\@\#\$\%\^\&\*\(\)\-\=\+\[\{\]\}\\\|\;\:\''\"\,\.\<\>\/\?\s]+)$)'
-      endif
       let l:match = s:matchstrpos(l:ctx['typed'], l:word_pattern)
       let l:ctx['base'] = l:match[0]
       let l:ctx['startcol'] = l:ctx['col'] - len(l:match[0])
 
-      return function(a:info['cm_refresh'])(a:opt, l:ctx)
-    endfunction
+      return function(l:refresh)(a:opt, l:ctx)
+    elseif  l:type == 2
+      let l:ctx = copy(a:ctx)
+      let l:match = s:matchstrpos(l:ctx['typed'], l:word_pattern)
+      let l:ctx['base'] = l:match[0]
+      let l:ctx['startcol'] = l:ctx['col'] - len(l:match[0])
 
-    call asyncomplete#register_source({
-      \ 'name': a:info['name'],
-      \ 'priority': a:info['priority'],
-      \ 'whitelist': a:info['scopes'],
-      \ 'completor': funcref('Closure'),
-      \ 'refresh_pattern': a:info['refresh_pattern']
-      \ })
-  endif
+      return l:refresh(a:opt, l:ctx)
+  endfunction
+
+  call asyncomplete#register_source({
+    \ 'name': a:info['name'],
+    \ 'priority': a:info['priority'],
+    \ 'whitelist': a:info['scopes'],
+    \ 'completor': funcref('Closure'),
+    \ 'refresh_pattern': a:info['refresh_pattern']
+    \ })
 endfunction
 
 func! cm#complete(info, context, startcol, matches, ...)

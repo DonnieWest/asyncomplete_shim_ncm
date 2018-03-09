@@ -50,9 +50,9 @@ function! cm#register_source(info) abort
     let l:patterns = a:info['cm_refresh_patterns']
 
     if len(l:patterns) == 1
-      let a:info['refresh_pattern'] = '\v('. l:patterns[0] . ')'
+      let a:info['refresh_pattern'] = '\v('. l:patterns[0] . ')$'
     else
-      let a:info['refresh_pattern'] = '\v('. join(l:patterns, '|') . ')'
+      let a:info['refresh_pattern'] = '\v('. join(l:patterns, '|') . ')$'
     endif
   endif
 
